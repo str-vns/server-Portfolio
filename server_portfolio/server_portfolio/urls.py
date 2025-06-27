@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-
+from ..portfolio.Views.User.views import ( AuthCreateNewUserView, AuthLoginExistingUserView)
 urlpatterns = [
     path('admin/', admin.site.urls),
+   path('auth/create/', AuthCreateNewUserView.as_view(), name='auth_create'),
+   path('auth/login/', AuthLoginExistingUserView.as_view(), name='auth_login'),
 ]
