@@ -59,3 +59,5 @@ htmlcov/
 
 # Other commonly ignored files
 Thumbs.db
+
+*.txt
