@@ -8,5 +8,7 @@ services:
     envVars:
       - key: SECRET_KEY
         generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: server-portfolio-m4sq.onrender.com
       - key: WEB_CONCURRENCY
         value: "4"
