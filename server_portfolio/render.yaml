@@ -1,17 +1,17 @@
 databases:
   default:
+    name: server_portfolio
     databaseName: server_portfolio
-    name: db.sqlite3
     plan: free
     user: server_portfolio
 
 services:
   - type: web
-    plan: free
     name: server_portfolio
+    plan: free
     runtime: python
-    buildCommand: './build.sh'
-    startCommand: 'python -m gunicorn server_portfolio.asgi:application -k uvicorn.workers.UvicornWorker'
+    buildCommand: "./build.sh"
+    startCommand: "python -m gunicorn server_portfolio.asgi:application -k uvicorn.workers.UvicornWorker"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -20,6 +20,4 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: WEB_CONCURRENCY
-        value: '4'
-
-        
+        value: "4"
