@@ -28,10 +28,7 @@ SECRET_KEY = env_config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = env_config(
-    "ALLOWED_HOSTS", default=["localhost", "127.0.0.1"], cast=list
-)
-
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
