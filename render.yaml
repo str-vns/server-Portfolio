@@ -1,6 +1,5 @@
 databases:
-  default:
-    name: server_portfolio
+  - name: server_portfolio
     databaseName: server_portfolio
     plan: free
     user: server_portfolio
