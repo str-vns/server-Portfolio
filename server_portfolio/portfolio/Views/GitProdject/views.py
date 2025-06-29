@@ -12,14 +12,14 @@ import json
 
 @api_view(["GET"])
 def get_git_projects(request):
-    gitProjects = database.child("Portfolio").get().val()
+    gitProjects = database.child("Portfolio").get(token).val()
 
     return JsonResponse(gitProjects, safe=False)
 
 
 @api_view(["GET"])
 def get_single_git_project(request, project_id):
-    gitItem = database.child("Portfolio").child(project_id).get().val()
+    gitItem = database.child("Portfolio").child(project_id).get(token).val()
     if not gitItem:
         return JsonResponse({"message": "Git project not found"}, status=404)
     gitProject = database.child("Portfolio").child(project_id).get().val()
@@ -183,6 +183,6 @@ def delete_git_project(request, project_id):
         delImage = gitImage['public_id']
         delete_image_helper(delImage)
     
-    database.child("Portfolio").child(project_id).remove()
+    database.child("Portfolio").child(project_id).remove(token)
     
     return JsonResponse({"message" : "Success Remove Git Project"}, safe=False)
