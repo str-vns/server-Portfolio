@@ -4,6 +4,7 @@ __pycache__/
 *.pyd
 *.pyo
 *.egg-info/
+*.cpython-312.pyc
 
 # Distribution / build files
 .Python
