@@ -22,12 +22,9 @@ from portfolio.Views.GitProdject.views import get_git_projects, create_git_proje
 # from ..portfolio.Views.User.views import ( AuthCreateNewUserView, AuthLoginExistingUserView)
 urlpatterns = [
     path("admin/", admin.site.urls),
-    #    path('auth/create/', AuthCreateNewUserView.as_view(), name='auth_create'),
     path("git-projects", get_git_projects, name="get_git_projects"),
     path("git-projects/create", create_git_project, name="create_git_project"),
     path("git-projects/<str:project_id>", get_single_git_project, name="get_single_git_project"),
     path("git-projects/patch/<str:project_id>", update_git_project, name="update_git_project"),
     path("git-projects/delete/<str:project_id>", delete_git_project, name="delete_git_project"),
-    # Assuming you have a view for creating git projects
-    #    path('auth/login/', AuthLoginExistingUserView.as_view(), name='auth_login'),
 ]
