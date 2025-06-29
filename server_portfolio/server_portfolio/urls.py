@@ -14,11 +14,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path
-from ..portfolio.Views.User.views import ( AuthCreateNewUserView, AuthLoginExistingUserView)
+from portfolio.Views.GitProdject.views import get_git_projects, create_git_project, get_single_git_project, update_git_project, delete_git_project
+
+# from ..portfolio.Views.User.views import ( AuthCreateNewUserView, AuthLoginExistingUserView)
 urlpatterns = [
-    path('admin/', admin.site.urls),
-   path('auth/create/', AuthCreateNewUserView.as_view(), name='auth_create'),
-   path('auth/login/', AuthLoginExistingUserView.as_view(), name='auth_login'),
+    path("admin/", admin.site.urls),
+    #    path('auth/create/', AuthCreateNewUserView.as_view(), name='auth_create'),
+    path("git-projects", get_git_projects, name="get_git_projects"),
+    path("git-projects/create", create_git_project, name="create_git_project"),
+    path("git-projects/<str:project_id>", get_single_git_project, name="get_single_git_project"),
+    path("git-projects/patch/<str:project_id>", update_git_project, name="update_git_project"),
+    path("git-projects/delete/<str:project_id>", delete_git_project, name="delete_git_project"),
+    # Assuming you have a view for creating git projects
+    #    path('auth/login/', AuthLoginExistingUserView.as_view(), name='auth_login'),
 ]
