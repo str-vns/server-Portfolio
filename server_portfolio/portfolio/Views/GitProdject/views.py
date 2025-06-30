@@ -1,4 +1,5 @@
 from portfolio.utils.Firebase.database import auth, database
+from Crypto.Cipher import AES
 from portfolio.utils.Firebase.token import token
 from portfolio.utils.Firebase.uploadImage import upload_helper, delete_image_helper
 from portfolio.utils.Date.serializeDate import serialize_datetime
@@ -6,12 +7,20 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from decouple import config as env_config
+from portfolio.utils.Encrypt.encryption import EncryptToken, DecryptToken
 import datetime
 import json
 
 
 @api_view(["GET"])
 def get_git_projects(request):
+
+    if request.method != "GET":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    decrypt = DecryptToken(request.headers.get('Authorization'))
+    if decrypt is False:
+        return JsonResponse({"message": "403 Forbidden"}, status=403)
+
     gitProjects = database.child("Portfolio").get(token).val()
 
     return JsonResponse(gitProjects, safe=False)
@@ -25,6 +34,7 @@ def get_single_git_project(request, project_id):
     gitProject = database.child("Portfolio").child(project_id).get().val()
 
     return JsonResponse(gitProject, safe=False)
+
 
 @csrf_exempt
 @api_view(["POST"])
@@ -92,14 +102,15 @@ def create_git_project(request):
         f"Git project created with ID: {gitProject['name']}", status=201
     )
 
+
 @csrf_exempt
 @api_view(["PATCH"])
 def update_git_project(request, project_id):
-    
+
     gitItem = database.child("Portfolio").child(project_id).get().val()
     if not gitItem:
         return JsonResponse({"message": "Git project not found"}, status=404)
-    
+
     if request.method == "PATCH":
         body = request.data
 
@@ -154,14 +165,22 @@ def update_git_project(request, project_id):
 
     gitProject = database.child("Portfolio").child(project_id).update(data, token)
 
-    images = database.child("Portfolio").child(project_id).child("images").get().val() or {}
+    images = (
+        database.child("Portfolio").child(project_id).child("images").get().val() or {}
+    )
 
     next_index = len(images)  # make it an int
 
     for i, image in enumerate(uploaded_images):
         index = str(next_index + i)
-        uploadImg = database.child("Portfolio").child(project_id).child("images").child(index).set(image)
-        
+        uploadImg = (
+            database.child("Portfolio")
+            .child(project_id)
+            .child("images")
+            .child(index)
+            .set(image)
+        )
+
     if not gitProject:
         return JsonResponse({"message": "Git project not found"}, status=404)
     if not uploadImg:
@@ -172,17 +191,33 @@ def update_git_project(request, project_id):
         status=200,
     )
 
+
 @csrf_exempt
 @api_view(["DELETE"])
 def delete_git_project(request, project_id):
     if request.method == "DELETE":
-       gitItem = database.child("Portfolio").child(project_id).child("images").get().val()
+        gitItem = (
+            database.child("Portfolio").child(project_id).child("images").get().val()
+        )
     if not gitItem:
         return JsonResponse({"message": "Git project not found"}, status=404)
     for gitImage in gitItem:
-        delImage = gitImage['public_id']
+        delImage = gitImage["public_id"]
         delete_image_helper(delImage)
-    
+
     database.child("Portfolio").child(project_id).remove(token)
-    
-    return JsonResponse({"message" : "Success Remove Git Project"}, safe=False)
+
+    return JsonResponse({"message": "Success Remove Git Project"}, safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def get_token_secret(request):
+    request_method = request.method
+    if request_method != "GET":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+
+    token_secret = env_config("TOKEN_SECRET").encode()
+    tag = EncryptToken(token_secret)
+
+    return JsonResponse({"Token": tag}, status=200)
