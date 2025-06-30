@@ -64,7 +64,9 @@ def create_git_project(request):
         tools = body.getlist("tools")
         feat = body.getlist("features")
         pLang = body.getlist("pLanguages")
+        favorite = body.get("favorite")
         date = datetime.datetime.now()
+        gitUrl= body.get("gitUrl")
         createdAt = json.dumps(date, default=serialize_datetime)
 
         if not pLang or not tools or not feat:
@@ -102,8 +104,10 @@ def create_git_project(request):
         "tools": tools,
         "pLanguages": pLang,
         "features": feat,
+        "favorite": favorite,
         "created_at": createdAt.strip('"'),
         "images": uploaded_images,
+        "gitUrl": gitUrl,
     }
 
     gitProject = database.child("Portfolio").push(data, token)
