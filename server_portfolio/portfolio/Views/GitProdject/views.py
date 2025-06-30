@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from decouple import config as env_config
 from portfolio.utils.Encrypt.encryption import EncryptToken, DecryptToken
+from django.template.loader import render_to_string
 import datetime
 import json
 
@@ -19,7 +20,12 @@ def get_git_projects(request):
         return JsonResponse({"message": "Method not allowed"}, status=405)
     decrypt = DecryptToken(request.headers.get("Authorization"))
     if decrypt is False:
-        return JsonResponse({"message": "403 Forbidden"}, status=403)
+        context = {"message": "403 Forbidden"}
+        html_content = render_to_string("403.html", context)
+
+        data = {"message": "403 Forbidden", "html_content": html_content}
+
+        return JsonResponse(data, status=403)
 
     gitProjects = database.child("Portfolio").get(token).val()
 
@@ -33,7 +39,7 @@ def get_single_git_project(request, project_id):
     decrypt = DecryptToken(request.headers.get("Authorization"))
     if decrypt is False:
         return JsonResponse({"message": "403 Forbidden"}, status=403)
-    
+
     gitItem = database.child("Portfolio").child(project_id).get(token).val()
     if not gitItem:
         return JsonResponse({"message": "Git project not found"}, status=404)
@@ -45,13 +51,13 @@ def get_single_git_project(request, project_id):
 @csrf_exempt
 @api_view(["POST"])
 def create_git_project(request):
-    
+
     if request.method != "POST":
         return JsonResponse({"message": "Method not allowed"}, status=405)
     decrypt = DecryptToken(request.headers.get("Authorization"))
     if decrypt is False:
         return JsonResponse({"message": "403 Forbidden"}, status=403)
-    
+
     if request.method == "POST":
         body = request.POST
 
@@ -121,10 +127,10 @@ def update_git_project(request, project_id):
     if request.method != "PATCH":
         return JsonResponse({"message": "Method not allowed"}, status=405)
     decrypt = DecryptToken(request.headers.get("Authorization"))
-    
+
     if decrypt is False:
         return JsonResponse({"message": "403 Forbidden"}, status=403)
-    
+
     gitItem = database.child("Portfolio").child(project_id).get().val()
     if not gitItem:
         return JsonResponse({"message": "Git project not found"}, status=404)
@@ -216,10 +222,10 @@ def delete_git_project(request, project_id):
     if request.method != "DELETE":
         return JsonResponse({"message": "Method not allowed"}, status=405)
     decrypt = DecryptToken(request.headers.get("Authorization"))
-    
+
     if decrypt is False:
         return JsonResponse({"message": "403 Forbidden"}, status=403)
-    
+
     if request.method == "DELETE":
         gitItem = (
             database.child("Portfolio").child(project_id).child("images").get().val()
@@ -244,11 +250,11 @@ def get_token_secret(request):
     data = request.POST
     if not data:
         return JsonResponse({"message": "No data provided"}, status=400)
-    
+
     Key_ID = data.get("Key_ID")
     if Key_ID != env_config("OKITOKI"):
         return JsonResponse({"message": "Invalid Key_ID"}, status=403)
-    
+
     token_secret = env_config("TOKEN_SECRET").encode()
     tag = EncryptToken(token_secret)
 
