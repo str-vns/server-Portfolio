@@ -17,7 +17,7 @@ def get_git_projects(request):
 
     if request.method != "GET":
         return JsonResponse({"message": "Method not allowed"}, status=405)
-    decrypt = DecryptToken(request.headers.get('Authorization'))
+    decrypt = DecryptToken(request.headers.get("Authorization"))
     if decrypt is False:
         return JsonResponse({"message": "403 Forbidden"}, status=403)
 
@@ -28,6 +28,12 @@ def get_git_projects(request):
 
 @api_view(["GET"])
 def get_single_git_project(request, project_id):
+    if request.method != "GET":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    decrypt = DecryptToken(request.headers.get("Authorization"))
+    if decrypt is False:
+        return JsonResponse({"message": "403 Forbidden"}, status=403)
+    
     gitItem = database.child("Portfolio").child(project_id).get(token).val()
     if not gitItem:
         return JsonResponse({"message": "Git project not found"}, status=404)
@@ -39,7 +45,13 @@ def get_single_git_project(request, project_id):
 @csrf_exempt
 @api_view(["POST"])
 def create_git_project(request):
-
+    
+    if request.method != "POST":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    decrypt = DecryptToken(request.headers.get("Authorization"))
+    if decrypt is False:
+        return JsonResponse({"message": "403 Forbidden"}, status=403)
+    
     if request.method == "POST":
         body = request.POST
 
@@ -106,7 +118,13 @@ def create_git_project(request):
 @csrf_exempt
 @api_view(["PATCH"])
 def update_git_project(request, project_id):
-
+    if request.method != "PATCH":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    decrypt = DecryptToken(request.headers.get("Authorization"))
+    
+    if decrypt is False:
+        return JsonResponse({"message": "403 Forbidden"}, status=403)
+    
     gitItem = database.child("Portfolio").child(project_id).get().val()
     if not gitItem:
         return JsonResponse({"message": "Git project not found"}, status=404)
@@ -195,6 +213,13 @@ def update_git_project(request, project_id):
 @csrf_exempt
 @api_view(["DELETE"])
 def delete_git_project(request, project_id):
+    if request.method != "DELETE":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    decrypt = DecryptToken(request.headers.get("Authorization"))
+    
+    if decrypt is False:
+        return JsonResponse({"message": "403 Forbidden"}, status=403)
+    
     if request.method == "DELETE":
         gitItem = (
             database.child("Portfolio").child(project_id).child("images").get().val()
@@ -211,12 +236,19 @@ def delete_git_project(request, project_id):
 
 
 @csrf_exempt
-@api_view(["GET"])
+@api_view(["POST"])
 def get_token_secret(request):
     request_method = request.method
-    if request_method != "GET":
+    if request_method != "POST":
         return JsonResponse({"message": "Method not allowed"}, status=405)
-
+    data = request.POST
+    if not data:
+        return JsonResponse({"message": "No data provided"}, status=400)
+    
+    Key_ID = data.get("Key_ID")
+    if Key_ID != env_config("OKITOKI"):
+        return JsonResponse({"message": "Invalid Key_ID"}, status=403)
+    
     token_secret = env_config("TOKEN_SECRET").encode()
     tag = EncryptToken(token_secret)
 
