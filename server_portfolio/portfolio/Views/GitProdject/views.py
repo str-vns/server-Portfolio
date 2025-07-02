@@ -246,7 +246,8 @@ def get_token_secret(request):
     request_method = request.method
     if request_method != "POST":
         return JsonResponse({"message": "Method not allowed"}, status=405)
-    data = request.POST
+    data = request.data
+    print(request.data)
     if not data:
         return JsonResponse({"message": "No data provided"}, status=400)
     
