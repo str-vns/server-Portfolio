@@ -39,7 +39,7 @@ def DecryptToken(tags):
     try:
         hmac = HMAC.new(hmac_key, digestmod=SHA256)
         hmac.update(nonce + cipherText).verify(tags)
-
+  
     except ValueError:
         print("The message was Modified")
         return False

@@ -1,5 +1,4 @@
 from portfolio.utils.Firebase.database import auth, database
-from Crypto.Cipher import AES
 from portfolio.utils.Firebase.token import token
 from portfolio.utils.Firebase.uploadImage import upload_helper, delete_image_helper
 from portfolio.utils.Date.serializeDate import serialize_datetime
@@ -15,16 +14,42 @@ import json
 
 @api_view(["GET"])
 def get_git_projects(request):
-
     if request.method != "GET":
         return JsonResponse({"message": "Method not allowed"}, status=405)
+
     decrypt = DecryptToken(request.headers.get("Authorization"))
     if decrypt is False:
         return JsonResponse({"message": "403 Forbidden"}, status=403)
 
-    gitProjects = database.child("Portfolio").get(token).val()
+    category = request.GET.get("category")
 
-    return JsonResponse(gitProjects, safe=False)
+    portfolios = database.child("Portfolio").get(token)
+    portfolio_list = []
+    if portfolios.each():
+        for item in portfolios.each():
+            data = item.val()
+            data["key"] = item.key()
+            portfolio_list.append(data)
+
+    filtered = False
+    
+    if category and category.lower() != "all":
+        portfolio_list = [p for p in portfolio_list if p.get("category") == category]
+        filtered = True
+
+    sorted_portfolios = sorted(
+        portfolio_list,
+        key=lambda x: x.get("favorite", "false") != "true"
+    )
+
+    paginated = sorted_portfolios
+    has_next_page = False
+
+    return JsonResponse({
+        "results": None if filtered and not paginated else paginated,
+        "hasNextPage": has_next_page,
+        "total": len(sorted_portfolios)
+    }, safe=False)
 
 
 @api_view(["GET"])
@@ -54,8 +79,8 @@ def create_git_project(request):
         return JsonResponse({"message": "403 Forbidden"}, status=403)
     
     if request.method == "POST":
-        body = request.POST
-
+        body = request.data
+        print(request.data)
         if not body:
             return JsonResponse({"message": "No data provided"}, status=400)
 
@@ -65,6 +90,7 @@ def create_git_project(request):
         feat = body.getlist("features")
         pLang = body.getlist("pLanguages")
         favorite = body.get("favorite")
+        category = body.get("category")
         date = datetime.datetime.now()
         gitUrl= body.get("gitUrl")
         createdAt = json.dumps(date, default=serialize_datetime)
@@ -104,6 +130,7 @@ def create_git_project(request):
         "tools": tools,
         "pLanguages": pLang,
         "features": feat,
+        "category": category,
         "favorite": favorite,
         "created_at": createdAt.strip('"'),
         "images": uploaded_images,
