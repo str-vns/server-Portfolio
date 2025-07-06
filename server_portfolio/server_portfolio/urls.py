@@ -24,6 +24,7 @@ from portfolio.Views.GitProdject.views import (
     update_git_project,
     delete_git_project,
     get_token_secret,
+    remove_images,
 )
 
 
@@ -48,4 +49,9 @@ urlpatterns = [
         name="delete_git_project",
     ),
     path("git-projects/secret/", get_token_secret, name="get_token_secret"),
+    path(
+        "git-projects/remove-images/<str:project_id>",
+        remove_images,
+        name="remove_images",
+    ),
 ]
