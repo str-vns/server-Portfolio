@@ -17,9 +17,9 @@ def get_git_projects(request):
     if request.method != "GET":
         return JsonResponse({"message": "Method not allowed"}, status=405)
 
-    decrypt = DecryptToken(request.headers.get("Authorization"))
-    if decrypt is False:
-        return JsonResponse({"message": "403 Forbidden"}, status=403)
+    # decrypt = DecryptToken(request.headers.get("Authorization"))
+    # if decrypt is False:
+    #     return JsonResponse({"message": "403 Forbidden"}, status=403)
 
     category = request.GET.get("category")
 
@@ -227,7 +227,9 @@ def update_git_project(request, project_id):
     if uploaded_images:
         for i, image in enumerate(uploaded_images):
             index = str(next_index + i)
-            database.child("Portfolio").child(project_id).child("images").child(index).set(image)
+            database.child("Portfolio").child(project_id).child("images").child(
+                index
+            ).set(image)
     else:
         pass
 
@@ -302,7 +304,7 @@ def remove_images(request, project_id):
         return JsonResponse({"message": "No data provided"}, status=400)
 
     public_id = body.get("public_id")
-    print("Public ID:", public_id)
+
     if not public_id:
         return JsonResponse({"message": "No public_id provided"}, status=400)
 
@@ -310,14 +312,79 @@ def remove_images(request, project_id):
 
     if not gitItem:
         return JsonResponse({"message": "Image not found"}, status=404)
-    
-    image_data = next((img for img in gitItem if img.get("public_id") == public_id), None)
+
+    image_data = next(
+        (img for img in gitItem if img.get("public_id") == public_id), None
+    )
     if not image_data:
         return JsonResponse({"message": "Image not found"}, status=404)
 
     if image_data:
-       updated_images = [img for img in gitItem if img.get("public_id") != public_id]
-       database.child("Portfolio").child(project_id).child("images").set(updated_images, token)
-       delete_image_helper(public_id)
-       
-    return JsonResponse({"message": "Image removed successfully", "public_id": public_id}, status=200)
+        updated_images = [img for img in gitItem if img.get("public_id") != public_id]
+        database.child("Portfolio").child(project_id).child("images").set(
+            updated_images, token
+        )
+        delete_image_helper(public_id)
+
+    return JsonResponse(
+        {"message": "Image removed successfully", "public_id": public_id}, status=200
+    )
+
+
+@csrf_exempt
+@api_view(["GET", "POST"])
+def SkillsCreate(request):
+    if request.method != "POST":
+        gitSkills = database.child("Skills").get(token).val()
+        grouped = {}
+
+        if gitSkills:
+            for skill_id, skill_data in gitSkills.items():
+                category = skill_data.get("category", "General")
+                data = {
+                    "title": skill_data["title"],
+                    "color": skill_data["color"],
+                    "icon": skill_data["icon"],
+                    "knowledge": skill_data["knowledge"],
+                }
+
+                if category not in grouped:
+                    grouped[category] = []
+                    
+                grouped[category].append(data)
+
+        merged_skills = [
+            {"category": cat, "data": entries} for cat, entries in grouped.items()
+        ]
+        return JsonResponse(merged_skills, safe=False)
+
+    body = request.data
+    if not body:
+        return JsonResponse({"message": "No data provided"}, status=400)
+
+    created_ids = []
+
+    # Handle single object or list
+    skills_data = body if isinstance(body, list) else [body]
+
+    for skill in skills_data:
+        icon = skill.get("icon")
+        title = skill.get("title")
+        color = skill.get("color")
+        knowledge = skill.get("knowledge")
+        category = skill.get("category")
+        createdAt = datetime.datetime.now().isoformat()
+
+        data = {
+            "icon": icon,
+            "title": title,
+            "color": color,
+            "knowledge": knowledge,
+            "category": category,
+            "created_at": createdAt,
+        }
+
+        skills = database.child("Skills").push(data, token)
+        created_ids.append(skills["name"])
+
+    return JsonResponse({"message": "Skills created", "ids": created_ids}, status=201)

@@ -24,9 +24,14 @@ from portfolio.Views.GitProdject.views import (
     update_git_project,
     delete_git_project,
     get_token_secret,
+    SkillsCreate,
     remove_images,
 )
-
+from portfolio.Views.others.views import (
+    education_create,
+    experience_create,
+    softSkill,
+)
 
 # from ..portfolio.Views.User.views import ( AuthCreateNewUserView, AuthLoginExistingUserView)
 urlpatterns = [
@@ -54,4 +59,8 @@ urlpatterns = [
         remove_images,
         name="remove_images",
     ),
+    path("skills", SkillsCreate, name="skills_create"),
+    path("education", education_create, name="education_create"),
+    path("experience", experience_create, name="experience_create"),
+    path("soft-skill", softSkill, name="soft_skill_create"),
 ]
