@@ -172,6 +172,7 @@ def update_git_project(request, project_id):
 
     title = body.get("title")
     desc = body.get("desc")
+    gitUrl = body.get("gitUrl")
     tools = body.getlist("tools")
     feat = body.getlist("features")
     pLang = body.getlist("pLanguages")
@@ -211,6 +212,7 @@ def update_git_project(request, project_id):
         "title": title,
         "description": desc,
         "tools": tools,
+        "gitUrl": gitUrl,
         "pLanguages": pLang,
         "features": feat,
         "created_at": createdAt.strip('"'),
@@ -350,7 +352,7 @@ def SkillsCreate(request):
 
                 if category not in grouped:
                     grouped[category] = []
-                    
+
                 grouped[category].append(data)
 
         merged_skills = [
