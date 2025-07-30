@@ -173,6 +173,7 @@ def update_git_project(request, project_id):
     title = body.get("title")
     desc = body.get("desc")
     gitUrl = body.get("gitUrl")
+    category = body.get("category")
     tools = body.getlist("tools")
     feat = body.getlist("features")
     pLang = body.getlist("pLanguages")
@@ -215,6 +216,7 @@ def update_git_project(request, project_id):
         "gitUrl": gitUrl,
         "pLanguages": pLang,
         "features": feat,
+        "category": category,
         "created_at": createdAt.strip('"'),
     }
 

@@ -124,6 +124,7 @@ USE_TZ = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
+    "https://my-port-folio-mu-puce.vercel.app/",
 ]
 
 CORS_ALLOW_METHODS = (
